@@ -5,6 +5,7 @@ import { SectionHeader } from '@/components/StatCard';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
+import LocationSearch from '@/components/LocationSearch';
 
 interface WeatherCurrent {
   temperature: number;
@@ -115,16 +116,22 @@ const FarmerClimate = () => {
 
   return (
     <div className="p-4 md:p-8 max-w-6xl mx-auto space-y-6">
-      <div className="flex items-center justify-between flex-wrap gap-2">
+      <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
           <h1 className="text-2xl font-bold font-display text-foreground">Climate Intelligence</h1>
           <p className="text-sm text-muted-foreground flex items-center gap-1 mt-1">
             <MapPin className="h-3.5 w-3.5" /> {locationName} • Live data
           </p>
         </div>
-        <Button variant="outline" size="sm" onClick={() => fetchWeather()} className="gap-1.5">
-          <RefreshCw className="h-3.5 w-3.5" /> Refresh
-        </Button>
+        <div className="flex items-center gap-2 flex-wrap">
+          <LocationSearch onSelect={(lat, lon, name) => {
+            setLocationName(name);
+            fetchWeather(lat, lon);
+          }} />
+          <Button variant="outline" size="sm" onClick={() => fetchWeather()} className="gap-1.5">
+            <RefreshCw className="h-3.5 w-3.5" /> Refresh
+          </Button>
+        </div>
       </div>
 
       {/* Current Weather */}
