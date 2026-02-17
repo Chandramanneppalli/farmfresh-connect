@@ -27,7 +27,7 @@ import ConsumerOrders from "./pages/consumer/ConsumerOrders";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 
 import ChatPage from "./pages/shared/ChatPage";
-
+import TraceLot from "./pages/TraceLot";
 const queryClient = new QueryClient();
 
 const App = () => (
@@ -67,6 +67,9 @@ const App = () => (
             <Route path="/admin/revenue" element={<AppShell><AdminDashboard /></AppShell>} />
             <Route path="/admin/disputes" element={<AppShell><AdminDashboard /></AppShell>} />
             <Route path="/admin/settings" element={<AppShell><AdminDashboard /></AppShell>} />
+
+            {/* Traceability */}
+            <Route path="/trace/:lotId" element={<TraceLot />} />
 
             <Route path="*" element={<NotFound />} />
           </Routes>
