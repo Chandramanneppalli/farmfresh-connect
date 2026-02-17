@@ -120,7 +120,7 @@ const FarmerClimate = () => {
         <div>
           <h1 className="text-2xl font-bold font-display text-foreground">Climate Intelligence</h1>
           <p className="text-sm text-muted-foreground flex items-center gap-1 mt-1">
-            <MapPin className="h-3.5 w-3.5" /> {locationName} • Live data
+            <MapPin className="h-3.5 w-3.5" /> {locationName} • NASA POWER Satellite Data
           </p>
         </div>
         <div className="flex items-center gap-2 flex-wrap">
@@ -154,7 +154,7 @@ const FarmerClimate = () => {
 
       {/* Forecast Chart */}
       <div className="rounded-xl border border-border bg-card p-4 shadow-card">
-        <SectionHeader title="7-Day Forecast" subtitle="Real-time data from Open-Meteo" />
+        <SectionHeader title="7-Day Climate Data" subtitle="NASA POWER satellite observations" />
         <ResponsiveContainer width="100%" height={250}>
           <LineChart data={chartData}>
             <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
