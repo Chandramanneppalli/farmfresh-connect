@@ -1,36 +1,39 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Sprout, Eye, EyeOff, ArrowLeft } from 'lucide-react';
+import { Sprout, Eye, EyeOff, ArrowLeft, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 import { useApp } from '@/contexts/AppContext';
 
 const Login = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { setRole, setIsAuthenticated, setUserName } = useApp();
+  const { toast } = useToast();
+  const { role, loading } = useApp();
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const isAdmin = location.state?.role === 'admin';
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Mock login
-    const role = isAdmin ? 'admin' : email.includes('farmer') ? 'farmer' : 'consumer';
-    setRole(role as any);
-    setIsAuthenticated(true);
-    setUserName(email.split('@')[0] || 'User');
-    navigate(role === 'farmer' ? '/farmer' : role === 'admin' ? '/admin' : '/consumer');
-  };
+    if (!email || !password) {
+      toast({ title: 'Missing fields', description: 'Please enter email and password.', variant: 'destructive' });
+      return;
+    }
+    setIsLoading(true);
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    setIsLoading(false);
 
-  const handleDemoLogin = (role: 'farmer' | 'consumer' | 'admin') => {
-    setRole(role);
-    setIsAuthenticated(true);
-    setUserName(role === 'farmer' ? 'Rajesh Kumar' : role === 'admin' ? 'Admin' : 'Priya Sharma');
-    navigate(role === 'farmer' ? '/farmer' : role === 'admin' ? '/admin' : '/consumer');
+    if (error) {
+      toast({ title: 'Login failed', description: error.message, variant: 'destructive' });
+      return;
+    }
+    // Navigation will be handled by auth state change in AppContext + ProtectedRoute
   };
 
   return (
@@ -47,37 +50,27 @@ const Login = () => {
           <span className="text-xl font-bold font-display">FarmLink</span>
         </div>
 
-        <h1 className="text-3xl font-bold font-display mb-2">
-          {isAdmin ? 'Admin Login' : 'Welcome Back'}
-        </h1>
+        <h1 className="text-3xl font-bold font-display mb-2">Welcome Back</h1>
         <p className="text-muted-foreground mb-8">Sign in to your account to continue</p>
 
         <form onSubmit={handleLogin} className="space-y-4">
           <div>
             <Label htmlFor="email">Email</Label>
-            <Input id="email" type="email" placeholder="you@example.com" value={email} onChange={e => setEmail(e.target.value)} className="mt-1.5 h-12" />
+            <Input id="email" type="email" placeholder="you@example.com" value={email} onChange={e => setEmail(e.target.value)} className="mt-1.5 h-12" required />
           </div>
           <div>
             <Label htmlFor="password">Password</Label>
             <div className="relative mt-1.5">
-              <Input id="password" type={showPassword ? 'text' : 'password'} placeholder="••••••••" value={password} onChange={e => setPassword(e.target.value)} className="h-12 pr-10" />
+              <Input id="password" type={showPassword ? 'text' : 'password'} placeholder="••••••••" value={password} onChange={e => setPassword(e.target.value)} className="h-12 pr-10" required />
               <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground">
                 {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
               </button>
             </div>
           </div>
-          <Button type="submit" size="lg" className="w-full h-12 font-semibold">Sign In</Button>
+          <Button type="submit" size="lg" className="w-full h-12 font-semibold" disabled={isLoading}>
+            {isLoading ? <><Loader2 className="h-4 w-4 animate-spin mr-2" /> Signing in...</> : 'Sign In'}
+          </Button>
         </form>
-
-        {/* Demo logins */}
-        <div className="mt-8 pt-6 border-t border-border">
-          <p className="text-xs text-muted-foreground text-center mb-4 uppercase tracking-wider">Quick Demo Access</p>
-          <div className="grid grid-cols-3 gap-2">
-            <Button variant="outline" size="sm" onClick={() => handleDemoLogin('farmer')} className="text-xs">Farmer</Button>
-            <Button variant="outline" size="sm" onClick={() => handleDemoLogin('consumer')} className="text-xs">Consumer</Button>
-            <Button variant="outline" size="sm" onClick={() => handleDemoLogin('admin')} className="text-xs">Admin</Button>
-          </div>
-        </div>
 
         <p className="text-center text-sm text-muted-foreground mt-6">
           Don't have an account?{' '}

@@ -44,12 +44,11 @@ const getNavItems = (role: UserRole) => {
 const AppShell = ({ children }: { children: ReactNode }) => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { role, userName, setIsAuthenticated, setRole } = useApp();
+  const { role, userName, signOut } = useApp();
   const navItems = getNavItems(role);
 
-  const handleLogout = () => {
-    setIsAuthenticated(false);
-    setRole(null);
+  const handleLogout = async () => {
+    await signOut();
     navigate('/');
   };
 
