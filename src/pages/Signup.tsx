@@ -1,28 +1,58 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Sprout, ArrowLeft } from 'lucide-react';
+import { Sprout, ArrowLeft, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { useApp } from '@/contexts/AppContext';
+import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 
 const Signup = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { setRole, setIsAuthenticated, setUserName } = useApp();
+  const { toast } = useToast();
   const selectedRole = (location.state?.role as 'farmer' | 'consumer') || 'consumer';
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
+  const [farmName, setFarmName] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleSignup = (e: React.FormEvent) => {
+  const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
-    setRole(selectedRole);
-    setIsAuthenticated(true);
-    setUserName(name || 'User');
-    navigate(selectedRole === 'farmer' ? '/farmer' : '/consumer');
+    if (!name || !email || !password) {
+      toast({ title: 'Missing fields', description: 'Please fill in all required fields.', variant: 'destructive' });
+      return;
+    }
+    setIsLoading(true);
+    const { error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        emailRedirectTo: window.location.origin,
+        data: {
+          full_name: name,
+          phone: phone || null,
+          role: selectedRole,
+          farm_name: selectedRole === 'farmer' ? farmName : null,
+          farm_location: null,
+        },
+      },
+    });
+    setIsLoading(false);
+
+    if (error) {
+      toast({ title: 'Signup failed', description: error.message, variant: 'destructive' });
+      return;
+    }
+
+    toast({
+      title: 'Check your email!',
+      description: 'We sent you a verification link. Please verify your email to continue.',
+    });
+    navigate('/login');
   };
 
   return (
@@ -47,28 +77,30 @@ const Signup = () => {
 
         <form onSubmit={handleSignup} className="space-y-4">
           <div>
-            <Label htmlFor="name">Full Name</Label>
-            <Input id="name" placeholder="Enter your full name" value={name} onChange={e => setName(e.target.value)} className="mt-1.5 h-12" />
+            <Label htmlFor="name">Full Name *</Label>
+            <Input id="name" placeholder="Enter your full name" value={name} onChange={e => setName(e.target.value)} className="mt-1.5 h-12" required />
           </div>
           <div>
-            <Label htmlFor="email">Email</Label>
-            <Input id="email" type="email" placeholder="you@example.com" value={email} onChange={e => setEmail(e.target.value)} className="mt-1.5 h-12" />
+            <Label htmlFor="email">Email *</Label>
+            <Input id="email" type="email" placeholder="you@example.com" value={email} onChange={e => setEmail(e.target.value)} className="mt-1.5 h-12" required />
           </div>
           <div>
             <Label htmlFor="phone">Phone</Label>
             <Input id="phone" type="tel" placeholder="+91 98765 43210" value={phone} onChange={e => setPhone(e.target.value)} className="mt-1.5 h-12" />
           </div>
           <div>
-            <Label htmlFor="password">Password</Label>
-            <Input id="password" type="password" placeholder="Create a strong password" value={password} onChange={e => setPassword(e.target.value)} className="mt-1.5 h-12" />
+            <Label htmlFor="password">Password *</Label>
+            <Input id="password" type="password" placeholder="Create a strong password" value={password} onChange={e => setPassword(e.target.value)} className="mt-1.5 h-12" required minLength={6} />
           </div>
           {selectedRole === 'farmer' && (
             <div>
               <Label htmlFor="farm">Farm Name / Location</Label>
-              <Input id="farm" placeholder="e.g. Green Valley Farm, Punjab" className="mt-1.5 h-12" />
+              <Input id="farm" placeholder="e.g. Green Valley Farm, Punjab" value={farmName} onChange={e => setFarmName(e.target.value)} className="mt-1.5 h-12" />
             </div>
           )}
-          <Button type="submit" size="lg" className="w-full h-12 font-semibold mt-2">Create Account</Button>
+          <Button type="submit" size="lg" className="w-full h-12 font-semibold mt-2" disabled={isLoading}>
+            {isLoading ? <><Loader2 className="h-4 w-4 animate-spin mr-2" /> Creating...</> : 'Create Account'}
+          </Button>
         </form>
 
         <p className="text-center text-sm text-muted-foreground mt-6">

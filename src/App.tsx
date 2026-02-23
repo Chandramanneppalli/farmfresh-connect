@@ -2,9 +2,10 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { AppProvider } from "@/contexts/AppContext";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { AppProvider, useApp } from "@/contexts/AppContext";
 import AppShell from "@/components/AppShell";
+import ProtectedRoute from "@/components/ProtectedRoute";
 
 import Welcome from "./pages/Welcome";
 import RoleSelect from "./pages/RoleSelect";
@@ -28,7 +29,19 @@ import AdminDashboard from "./pages/admin/AdminDashboard";
 
 import ChatPage from "./pages/shared/ChatPage";
 import TraceLot from "./pages/TraceLot";
+
 const queryClient = new QueryClient();
+
+// Redirect authenticated users away from auth pages
+const AuthRoute = ({ children }: { children: React.ReactNode }) => {
+  const { isAuthenticated, role, loading } = useApp();
+  if (loading) return null;
+  if (isAuthenticated && role) {
+    const dest = role === 'farmer' ? '/farmer' : role === 'admin' ? '/admin' : '/consumer';
+    return <Navigate to={dest} replace />;
+  }
+  return <>{children}</>;
+};
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
@@ -39,34 +52,34 @@ const App = () => (
         <BrowserRouter>
           <Routes>
             {/* Auth */}
-            <Route path="/" element={<Welcome />} />
-            <Route path="/role-select" element={<RoleSelect />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/signup" element={<Signup />} />
+            <Route path="/" element={<AuthRoute><Welcome /></AuthRoute>} />
+            <Route path="/role-select" element={<AuthRoute><RoleSelect /></AuthRoute>} />
+            <Route path="/login" element={<AuthRoute><Login /></AuthRoute>} />
+            <Route path="/signup" element={<AuthRoute><Signup /></AuthRoute>} />
 
             {/* Farmer */}
-            <Route path="/farmer" element={<AppShell><FarmerDashboard /></AppShell>} />
-            <Route path="/farmer/products" element={<AppShell><FarmerProducts /></AppShell>} />
-            <Route path="/farmer/orders" element={<AppShell><FarmerOrders /></AppShell>} />
-            <Route path="/farmer/climate" element={<AppShell><FarmerClimate /></AppShell>} />
-            <Route path="/farmer/pricing" element={<AppShell><FarmerPricing /></AppShell>} />
-            <Route path="/farmer/chat" element={<AppShell><ChatPage /></AppShell>} />
-            <Route path="/farmer/scan" element={<AppShell><FarmerQualityScan /></AppShell>} />
+            <Route path="/farmer" element={<ProtectedRoute allowedRoles={['farmer']}><AppShell><FarmerDashboard /></AppShell></ProtectedRoute>} />
+            <Route path="/farmer/products" element={<ProtectedRoute allowedRoles={['farmer']}><AppShell><FarmerProducts /></AppShell></ProtectedRoute>} />
+            <Route path="/farmer/orders" element={<ProtectedRoute allowedRoles={['farmer']}><AppShell><FarmerOrders /></AppShell></ProtectedRoute>} />
+            <Route path="/farmer/climate" element={<ProtectedRoute allowedRoles={['farmer']}><AppShell><FarmerClimate /></AppShell></ProtectedRoute>} />
+            <Route path="/farmer/pricing" element={<ProtectedRoute allowedRoles={['farmer']}><AppShell><FarmerPricing /></AppShell></ProtectedRoute>} />
+            <Route path="/farmer/chat" element={<ProtectedRoute allowedRoles={['farmer']}><AppShell><ChatPage /></AppShell></ProtectedRoute>} />
+            <Route path="/farmer/scan" element={<ProtectedRoute allowedRoles={['farmer']}><AppShell><FarmerQualityScan /></AppShell></ProtectedRoute>} />
 
             {/* Consumer */}
-            <Route path="/consumer" element={<AppShell><ConsumerHome /></AppShell>} />
-            <Route path="/consumer/browse" element={<AppShell><ConsumerHome /></AppShell>} />
-            <Route path="/consumer/product/:id" element={<AppShell><ProductDetail /></AppShell>} />
-            <Route path="/consumer/cart" element={<AppShell><ConsumerCart /></AppShell>} />
-            <Route path="/consumer/orders" element={<AppShell><ConsumerOrders /></AppShell>} />
-            <Route path="/consumer/chat" element={<AppShell><ChatPage /></AppShell>} />
+            <Route path="/consumer" element={<ProtectedRoute allowedRoles={['consumer']}><AppShell><ConsumerHome /></AppShell></ProtectedRoute>} />
+            <Route path="/consumer/browse" element={<ProtectedRoute allowedRoles={['consumer']}><AppShell><ConsumerHome /></AppShell></ProtectedRoute>} />
+            <Route path="/consumer/product/:id" element={<ProtectedRoute allowedRoles={['consumer']}><AppShell><ProductDetail /></AppShell></ProtectedRoute>} />
+            <Route path="/consumer/cart" element={<ProtectedRoute allowedRoles={['consumer']}><AppShell><ConsumerCart /></AppShell></ProtectedRoute>} />
+            <Route path="/consumer/orders" element={<ProtectedRoute allowedRoles={['consumer']}><AppShell><ConsumerOrders /></AppShell></ProtectedRoute>} />
+            <Route path="/consumer/chat" element={<ProtectedRoute allowedRoles={['consumer']}><AppShell><ChatPage /></AppShell></ProtectedRoute>} />
 
             {/* Admin */}
-            <Route path="/admin" element={<AppShell><AdminDashboard /></AppShell>} />
-            <Route path="/admin/users" element={<AppShell><AdminDashboard /></AppShell>} />
-            <Route path="/admin/revenue" element={<AppShell><AdminDashboard /></AppShell>} />
-            <Route path="/admin/disputes" element={<AppShell><AdminDashboard /></AppShell>} />
-            <Route path="/admin/settings" element={<AppShell><AdminDashboard /></AppShell>} />
+            <Route path="/admin" element={<ProtectedRoute allowedRoles={['admin']}><AppShell><AdminDashboard /></AppShell></ProtectedRoute>} />
+            <Route path="/admin/users" element={<ProtectedRoute allowedRoles={['admin']}><AppShell><AdminDashboard /></AppShell></ProtectedRoute>} />
+            <Route path="/admin/revenue" element={<ProtectedRoute allowedRoles={['admin']}><AppShell><AdminDashboard /></AppShell></ProtectedRoute>} />
+            <Route path="/admin/disputes" element={<ProtectedRoute allowedRoles={['admin']}><AppShell><AdminDashboard /></AppShell></ProtectedRoute>} />
+            <Route path="/admin/settings" element={<ProtectedRoute allowedRoles={['admin']}><AppShell><AdminDashboard /></AppShell></ProtectedRoute>} />
 
             {/* Traceability */}
             <Route path="/trace/:lotId" element={<TraceLot />} />
