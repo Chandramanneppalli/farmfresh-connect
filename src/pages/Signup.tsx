@@ -58,7 +58,7 @@ const Signup = () => {
   return (
     <div className="min-h-screen bg-background px-6 py-8">
       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="max-w-sm mx-auto">
-        <button onClick={() => navigate(-1)} className="flex items-center gap-1 text-muted-foreground hover:text-foreground transition-colors mb-8">
+        <button onClick={() => navigate('/role-select')} className="flex items-center gap-1 text-muted-foreground hover:text-foreground transition-colors mb-8">
           <ArrowLeft className="h-4 w-4" /> Back
         </button>
 
