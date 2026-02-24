@@ -49,10 +49,10 @@ const Signup = () => {
     }
 
     toast({
-      title: 'Check your email!',
-      description: 'We sent you a verification link. Please verify your email to continue.',
+      title: 'Account created!',
+      description: 'You are now signed in.',
     });
-    navigate('/login');
+    // Auth state change in AppContext will handle navigation
   };
 
   return (
