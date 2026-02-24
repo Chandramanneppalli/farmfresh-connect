@@ -26,6 +26,10 @@ import ConsumerCart from "./pages/consumer/ConsumerCart";
 import ConsumerOrders from "./pages/consumer/ConsumerOrders";
 
 import AdminDashboard from "./pages/admin/AdminDashboard";
+import AdminUsers from "./pages/admin/AdminUsers";
+import AdminRevenue from "./pages/admin/AdminRevenue";
+import AdminDisputes from "./pages/admin/AdminDisputes";
+import AdminSettings from "./pages/admin/AdminSettings";
 
 import ChatPage from "./pages/shared/ChatPage";
 import TraceLot from "./pages/TraceLot";
@@ -76,10 +80,10 @@ const App = () => (
 
             {/* Admin */}
             <Route path="/admin" element={<ProtectedRoute allowedRoles={['admin']}><AppShell><AdminDashboard /></AppShell></ProtectedRoute>} />
-            <Route path="/admin/users" element={<ProtectedRoute allowedRoles={['admin']}><AppShell><AdminDashboard /></AppShell></ProtectedRoute>} />
-            <Route path="/admin/revenue" element={<ProtectedRoute allowedRoles={['admin']}><AppShell><AdminDashboard /></AppShell></ProtectedRoute>} />
-            <Route path="/admin/disputes" element={<ProtectedRoute allowedRoles={['admin']}><AppShell><AdminDashboard /></AppShell></ProtectedRoute>} />
-            <Route path="/admin/settings" element={<ProtectedRoute allowedRoles={['admin']}><AppShell><AdminDashboard /></AppShell></ProtectedRoute>} />
+            <Route path="/admin/users" element={<ProtectedRoute allowedRoles={['admin']}><AppShell><AdminUsers /></AppShell></ProtectedRoute>} />
+            <Route path="/admin/revenue" element={<ProtectedRoute allowedRoles={['admin']}><AppShell><AdminRevenue /></AppShell></ProtectedRoute>} />
+            <Route path="/admin/disputes" element={<ProtectedRoute allowedRoles={['admin']}><AppShell><AdminDisputes /></AppShell></ProtectedRoute>} />
+            <Route path="/admin/settings" element={<ProtectedRoute allowedRoles={['admin']}><AppShell><AdminSettings /></AppShell></ProtectedRoute>} />
 
             {/* Traceability */}
             <Route path="/trace/:lotId" element={<TraceLot />} />
