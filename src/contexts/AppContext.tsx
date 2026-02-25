@@ -36,17 +36,22 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
           const meta = session.user.user_metadata;
           setUserName(meta?.full_name || session.user.email?.split('@')[0] || 'User');
 
-          // Fetch role from user_roles table
-          const { data: roles } = await supabase
-            .from('user_roles')
-            .select('role')
-            .eq('user_id', session.user.id)
-            .limit(1);
+          try {
+            // Fetch role from user_roles table
+            const { data: roles } = await supabase
+              .from('user_roles')
+              .select('role')
+              .eq('user_id', session.user.id)
+              .limit(1);
 
-          if (roles && roles.length > 0) {
-            setRole(roles[0].role as UserRole);
-          } else {
-            // Fallback to metadata
+            if (roles && roles.length > 0) {
+              setRole(roles[0].role as UserRole);
+            } else {
+              // Fallback to metadata
+              setRole((meta?.role as UserRole) || 'consumer');
+            }
+          } catch (error) {
+            console.error('Error fetching role:', error);
             setRole((meta?.role as UserRole) || 'consumer');
           }
         } else {
