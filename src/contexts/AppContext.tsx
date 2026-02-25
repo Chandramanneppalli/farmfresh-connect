@@ -26,49 +26,68 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    let mounted = true;
+
     // Listen for auth changes FIRST
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        setSession(session);
-        setUser(session?.user ?? null);
+      async (event, currentSession) => {
+        if (!mounted) return;
+        setSession(currentSession);
+        setUser(currentSession?.user ?? null);
 
-        if (session?.user) {
-          const meta = session.user.user_metadata;
-          setUserName(meta?.full_name || session.user.email?.split('@')[0] || 'User');
+        if (currentSession?.user) {
+          const meta = currentSession.user.user_metadata;
+          setUserName(meta?.full_name || currentSession.user.email?.split('@')[0] || 'User');
 
-          try {
-            // Fetch role from user_roles table
-            const { data: roles } = await supabase
-              .from('user_roles')
-              .select('role')
-              .eq('user_id', session.user.id)
-              .limit(1);
+          // Use setTimeout to avoid Supabase auth deadlock
+          setTimeout(async () => {
+            if (!mounted) return;
+            try {
+              const { data: roles } = await supabase
+                .from('user_roles')
+                .select('role')
+                .eq('user_id', currentSession.user.id)
+                .limit(1);
 
-            if (roles && roles.length > 0) {
-              setRole(roles[0].role as UserRole);
-            } else {
-              // Fallback to metadata
-              setRole((meta?.role as UserRole) || 'consumer');
+              if (!mounted) return;
+              if (roles && roles.length > 0) {
+                setRole(roles[0].role as UserRole);
+              } else {
+                setRole((meta?.role as UserRole) || 'consumer');
+              }
+            } catch (error) {
+              console.error('Error fetching role:', error);
+              if (mounted) setRole((meta?.role as UserRole) || 'consumer');
             }
-          } catch (error) {
-            console.error('Error fetching role:', error);
-            setRole((meta?.role as UserRole) || 'consumer');
-          }
+            if (mounted) setLoading(false);
+          }, 0);
         } else {
           setRole(null);
           setUserName('');
+          setLoading(false);
         }
-        setLoading(false);
       }
     );
 
     // Then check existing session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (!session) setLoading(false);
-      // onAuthStateChange will handle the rest
+    supabase.auth.getSession().then(({ data: { session: existingSession } }) => {
+      if (!mounted) return;
+      // If no session and still loading, force loading to false
+      if (!existingSession) {
+        setLoading(false);
+      }
     });
 
-    return () => subscription.unsubscribe();
+    // Safety timeout to prevent infinite loading
+    const timeout = setTimeout(() => {
+      if (mounted) setLoading(false);
+    }, 5000);
+
+    return () => {
+      mounted = false;
+      subscription.unsubscribe();
+      clearTimeout(timeout);
+    };
   }, []);
 
   const signOut = async () => {
