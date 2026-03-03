@@ -50,9 +50,9 @@ const Signup = () => {
 
     toast({
       title: 'Account created!',
-      description: 'You are now signed in.',
+      description: 'Please check your email for a verification code.',
     });
-    // Auth state change in AppContext will handle navigation
+    navigate('/verify-otp', { state: { email } });
   };
 
   return (

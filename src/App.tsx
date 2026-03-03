@@ -11,6 +11,7 @@ import Welcome from "./pages/Welcome";
 import RoleSelect from "./pages/RoleSelect";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
+import VerifyOtp from "./pages/VerifyOtp";
 import NotFound from "./pages/NotFound";
 
 import FarmerDashboard from "./pages/farmer/FarmerDashboard";
@@ -60,6 +61,7 @@ const App = () => (
             <Route path="/role-select" element={<AuthRoute><RoleSelect /></AuthRoute>} />
             <Route path="/login" element={<AuthRoute><Login /></AuthRoute>} />
             <Route path="/signup" element={<AuthRoute><Signup /></AuthRoute>} />
+            <Route path="/verify-otp" element={<AuthRoute><VerifyOtp /></AuthRoute>} />
 
             {/* Farmer */}
             <Route path="/farmer" element={<ProtectedRoute allowedRoles={['farmer']}><AppShell><FarmerDashboard /></AppShell></ProtectedRoute>} />
